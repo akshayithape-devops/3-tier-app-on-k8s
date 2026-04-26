@@ -365,7 +365,21 @@ kubectl get pods -n three-tier-app
 ### Step 15: Test the App 
 
 ```
-ab -n 10000 -c 500 URL
+# GET Call
+for i in {1..1000}; do
+  curl -s -o /dev/null -w "%{http_code}\n" \
+  http://k8s-threetie-frontend-a5ba41a647-1397024141.ap-south-1.elb.amazonaws.com/ &
+done
+wait
+
+# POST Call
+for i in {1..1000}; do
+  curl -s -X POST "http://k8s-threetie-frontend-a5ba41a647-2059190062.ap-south-1.elb.amazonaws.com/tasks" \
+    -H "Content-Type: application/json" \
+    -d "{\"title\":\"task-$i\"}" &
+done
+
+wait
 ```
 
 

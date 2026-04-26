@@ -37,10 +37,10 @@ spec:
 
         resources:
           requests:
-            cpu: "30m"
+            cpu: "10m"
             memory: "100Mi"
           limits:
-            cpu: "60m"
+            cpu: "20m"
             memory: "200Mi"
 
         livenessProbe:
