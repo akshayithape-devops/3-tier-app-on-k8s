@@ -1,8 +1,26 @@
-# EKS Karpenter Demo
+# EKS Infrastructure & 3-Tier Application Demo
 
 ## Overview 
 
-This section demonstrates how to install and configure Karpenter a Kubernetes cluster autoscaler designed for AWS EKS. Karpenter automatically provisions and manages EC2 instances based on pod scheduling requirements, offering faster scaling, better bin-packing, and cost optimization compared to traditional Cluster Autoscaler.
+This project demonstrates how to deploy and operate a production-like 3-tier Task Manager application on AWS EKS, using Terraform and Kubernetes.
+
+It covers:
+
+- AWS EKS cluster provisioning using Terraform
+- Dynamic node scaling using Karpenter
+- Deployment of a full 3-tier application (Frontend, Backend, Database)
+- Autoscaling using HPA
+- Database deployment using both basic and operator-based approaches
+
+The main focus of this project is the end-to-end application deployment and scaling, with Karpenter used as the underlying compute scaling mechanism.
+
+## Architecture Highlights
+
+- Frontend: React + Nginx (UI layer)
+- Backend: Node.js REST APIs
+- Database: MongoDB / Percona MongoDB Operator
+- Infrastructure: AWS EKS (managed Kubernetes)
+- Autoscaling: HPA + Karpenter (node provisioning)
 
 ## What is Karpenter?
 
