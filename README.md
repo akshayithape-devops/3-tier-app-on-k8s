@@ -17,7 +17,7 @@ Karpenter is an open-source, flexible, high-performance Kubernetes cluster autos
 ## Project Structure
 
 ```
-01_EKS_Karpenter_Demo
+02_3_Tier_App_Deploy_On_EKS_Demo
 ├── 01_terraform
 │   ├── 01_vpc
 │   │   ├── main.tf
@@ -84,12 +84,49 @@ Karpenter is an open-source, flexible, high-performance Kubernetes cluster autos
 │   │   ├── 01_ec2nodeclass.yaml
 │   │   ├── 02_nodepool_ondemand.yaml
 │   │   └── 03_nodepool_spot.yaml
-│   └── 02_app
-│       ├── inflate-ondemand.yaml
-│       ├── load-generator.yaml
-│       ├── webapp-hpa.yaml
-│       ├── webapp-svc.yaml
-│       └── webapp.yaml
+│   ├── 02_app
+│   │   ├── inflate-ondemand.yaml
+│   │   ├── load-generator.yaml
+│   │   ├── webapp-hpa.yaml
+│   │   ├── webapp-svc.yaml
+│   │   └── webapp.yaml
+│   └── 03_task_manager
+│       ├── 01_database
+│       │   ├── 01-db-secrets.yaml
+│       │   ├── 02-db-mongo-cluster.yaml
+│       │   ├── 02-db-percona-mongo-cluster.yaml
+│       │   └── 03-db-service.yaml
+│       ├── 02_backend
+│       │   ├── 01-backend-configmap.yaml
+│       │   ├── 02-backend-deployment.yaml
+│       │   ├── 03-backend-service.yaml
+│       │   ├── 04-backend-ingress.yaml
+│       │   └── 05-backend-hpa.yaml
+│       ├── 03_frontend
+│       │   ├── 01-frontend-configmap.yaml
+│       │   ├── 02-frontend-deployment.yaml
+│       │   ├── 03-frontend-service.yaml
+│       │   ├── 04-frontend-ingress.yaml
+│       │   └── 05-frontend-hpa.yaml
+│       └── app-namespace.yaml
+├── 03_task_manager
+│   ├── 01_frontend
+│   │   ├── Dockerfile
+│   │   ├── package.json
+│   │   ├── package-lock.json
+│   │   ├── postcss.config.js
+│   │   ├── public
+│   │   │   ├── env.js
+│   │   │   └── index.html
+│   │   ├── src
+│   │   │   ├── App.js
+│   │   │   ├── index.css
+│   │   │   └── index.js
+│   │   └── tailwind.config.js
+│   └── 02_backend
+│       ├── app.js
+│       ├── dockerfile
+│       └── package.json
 └── README.md
 
 11 directories, 63 files
