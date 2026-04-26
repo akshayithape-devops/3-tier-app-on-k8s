@@ -158,7 +158,7 @@ Karpenter is an open-source, flexible, high-performance Kubernetes cluster autos
 - ✅ Helm >= 3.0 installed
 - ✅ S3 bucket for Terraform remote state (update bucket names in c1_versions.tf for each terraform project)
 
-## Deployment Steps
+## Demo #01 - Simple App Deployment Steps
 
 ### Step 1: Deploy VPC
 
@@ -218,7 +218,7 @@ kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter -f
 
 ```
 
-### Step 9: Deploy the application
+### Step 9: Deploy the application - Simple App
 
 ```
 cd k8s/app
@@ -235,5 +235,120 @@ kubectl apply -f load-generator.yaml
 kubectl get pods
 kubectl get nodes
 ```
+
+## Demo #02 - 3-tier App Deployment Steps
+
+### Step 1: Deploy VPC
+
+```
+cd terraform/vpc
+terraform init
+terraform apply -auto-approve
+```
+
+### Step 2: Deploy EKS Cluster + Add-ons
+
+```
+cd terraform/eks
+terraform init
+terraform apply -auto-approve
+```
+### Step 3: Deploy Karpenter 
+
+```
+cd terraform/karpenter
+terraform init
+terraform apply -auto-approve
+```
+
+### Step 4: Configure kubectl 
+
+```
+aws eks --region ap-south-1 --profile eks-demo-cloudops update-kubeconfig --name retail-dev-eks-karpenter-demo
+```
+
+### Step 5: Verify Karpenter is running
+
+```
+kubectl get pods -n kube-system -l app.kubernetes.io/name=karpenter
+```
+
+### Step 6: Apply Karpenter Configuration
+
+```
+cd k8s/karpenter
+kubectl apply -f 01_ec2nodeclass.yaml
+kubectl apply -f 02_nodepool_ondemand.yaml
+kubectl apply -f 03_nodepool_spot.yaml
+```
+
+### Step 7: Verify NodePools and EC2Nodeclass
+
+```
+ectl get nodepools
+kubectl get ec2nodeclass
+```
+
+### Step 8: Watch Karpenter logs 
+
+```
+kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter -f
+
+```
+
+### Step 9: Build Docker Image - Frontend  
+
+```
+cd 03_task_manager/01_frontend/
+aws ecr get-login-password --region ap-south-1 --profile eks-demo-cloudops | docker login --username AWS --password-stdin repo-url
+docker buildx build -f Dockerfile --platform linux/amd64 -t 3-tier-app-demo/frontend .
+docker tag 3-tier-app-demo/frontend:latest 970453994651.dkr.ecr.ap-south-1.amazonaws.com/3-tier-app-demo/frontend:latest
+docker push 970453994651.dkr.ecr.ap-south-1.amazonaws.com/3-tier-app-demo/frontend:latest
+```
+
+### Step 10: Build Docker Image - Backend  
+
+```
+cd 03_task_manager/01_backend/
+docker buildx build -f Dockerfile --platform linux/amd64 -t 3-tier-app-demo/backend .
+docker tag 3-tier-app-demo/frontend:latest 970453994651.dkr.ecr.ap-south-1.amazonaws.com/3-tier-app-demo/backend:latest
+docker push 970453994651.dkr.ecr.ap-south-1.amazonaws.com/3-tier-app-demo/backend:latest
+```
+
+### Step 11: Deploy DB - Single Server  
+
+```
+cd 02_k8s/03_task_manager/01_database/ 
+kubectl apply -f 01-db-secrets.yaml
+kubectl apply -f 02-db-mongo-cluster.yaml
+kubectl apply -f 03-db-service.yaml
+```
+
+### Step 12: Deploy DB - Backend Server 
+
+```
+cd 02_k8s/03_task_manager/02_backend/ 
+kubectl apply -f 01-backend-configmap.yaml
+kubectl apply -f 02-backend-deployment.yaml
+kubectl apply -f 03-backend-service.yaml
+kubectl apply -f 04-backend-ingress.yaml
+```
+
+### Step 13: Deploy DB - Frontend Server 
+
+```
+cd 02_k8s/03_task_manager/03_frontend/ 
+kubectl apply -f 01-frontend-configmap.yaml
+kubectl apply -f 02-frontend-deployment.yaml
+kubectl apply -f 03-frontend-service.yaml
+kubectl apply -f 04-frontend-ingress.yaml
+```
+
+### Step 14: Test the App
+
+```
+
+```
+
 
 ## Thanks
