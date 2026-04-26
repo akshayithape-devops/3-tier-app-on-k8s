@@ -382,7 +382,13 @@ done
 wait
 ```
 
-### Step 16: Deploy DB - Cluster using operator  
+### Step 16: Setup Percona Operator
+
+```
+kubectl apply --server-side -f https://raw.githubusercontent.com/percona/percona-server-mongodb-operator/v1.22.0/deploy/bundle.yaml -n three-tier-app
+```
+
+### Step 17: Deploy DB - Cluster using operator  
 
 ```
 cd 02_k8s/03_task_manager/01_database/ 
@@ -396,7 +402,7 @@ kubectl get nodes
 kubectl get pods -n three-tier-app
 ```
 
-### Step 17: Deploy DB - Backend Server 
+### Step 18: Deploy DB - Backend Server 
 
 ```
 cd 02_k8s/03_task_manager/02_backend/ 
@@ -408,7 +414,7 @@ kubectl get nodes
 kubectl get pods -n three-tier-app
 ```
 
-### Step 18: Deploy DB - Frontend Server 
+### Step 19: Deploy DB - Frontend Server 
 
 ```
 cd 02_k8s/03_task_manager/03_frontend/ 
@@ -419,7 +425,7 @@ kubectl get nodes
 kubectl get pods -n three-tier-app
 ```
 
-### Step 19: Test the App 
+### Step 20: Test the App 
 
 ```
 # GET Call
