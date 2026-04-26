@@ -396,17 +396,19 @@ kubectl get nodes
 kubectl get pods -n three-tier-app
 ```
 
-### Step 13: Deploy DB - Backend Server 
+### Step 17: Deploy DB - Backend Server 
 
 ```
 cd 02_k8s/03_task_manager/02_backend/ 
+kubectl apply -f 01-backend-configmap.yaml
+kubectl apply -f 02-backend-deployment.yaml
 kubectl apply -f 05-backend-hpa.yaml
 
 kubectl get nodes
 kubectl get pods -n three-tier-app
 ```
 
-### Step 14: Deploy DB - Frontend Server 
+### Step 18: Deploy DB - Frontend Server 
 
 ```
 cd 02_k8s/03_task_manager/03_frontend/ 
@@ -417,7 +419,7 @@ kubectl get nodes
 kubectl get pods -n three-tier-app
 ```
 
-### Step 15: Test the App 
+### Step 19: Test the App 
 
 ```
 # GET Call
