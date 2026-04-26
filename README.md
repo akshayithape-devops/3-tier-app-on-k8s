@@ -382,5 +382,59 @@ done
 wait
 ```
 
+### Step 16: Deploy DB - Cluster using operator  
+
+```
+cd 02_k8s/03_task_manager/01_database/ 
+kubectl delete -f 03-db-service.yaml
+kubectl delete -f 02-db-mongo-cluster.yaml
+kubectl apply -f 01-db-secrets.yaml
+kubectl apply -f 02-db-percona-mongo-cluster.yaml
+kubectl apply -f 03-db-percona-service.yaml
+
+kubectl get nodes
+kubectl get pods -n three-tier-app
+```
+
+### Step 13: Deploy DB - Backend Server 
+
+```
+cd 02_k8s/03_task_manager/02_backend/ 
+kubectl apply -f 05-backend-hpa.yaml
+
+kubectl get nodes
+kubectl get pods -n three-tier-app
+```
+
+### Step 14: Deploy DB - Frontend Server 
+
+```
+cd 02_k8s/03_task_manager/03_frontend/ 
+kubectl apply -f 05-frontend-hpa.yaml
+
+
+kubectl get nodes
+kubectl get pods -n three-tier-app
+```
+
+### Step 15: Test the App 
+
+```
+# GET Call
+for i in {1..1000}; do
+  curl -s -o /dev/null -w "%{http_code}\n" \
+  http://k8s-threetie-frontend-a5ba41a647-1397024141.ap-south-1.elb.amazonaws.com/ &
+done
+wait
+
+# POST Call
+for i in {1..1000}; do
+  curl -s -X POST "http://k8s-threetie-frontend-a5ba41a647-2059190062.ap-south-1.elb.amazonaws.com/tasks" \
+    -H "Content-Type: application/json" \
+    -d "{\"title\":\"task-$i\"}" &
+done
+
+wait
+```
 
 ## Thanks
