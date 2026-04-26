@@ -329,6 +329,9 @@ cd 02_k8s/03_task_manager/01_database/
 kubectl apply -f 01-db-secrets.yaml
 kubectl apply -f 02-db-mongo-cluster.yaml
 kubectl apply -f 03-db-service.yaml
+
+kubectl get nodes
+kubectl get pods -n three-tier-app
 ```
 
 ### Step 13: Deploy DB - Backend Server 
@@ -339,6 +342,10 @@ kubectl apply -f 01-backend-configmap.yaml
 kubectl apply -f 02-backend-deployment.yaml
 kubectl apply -f 03-backend-service.yaml
 kubectl apply -f 04-backend-ingress.yaml
+
+
+kubectl get nodes
+kubectl get pods -n three-tier-app
 ```
 
 ### Step 14: Deploy DB - Frontend Server 
@@ -349,12 +356,16 @@ kubectl apply -f 01-frontend-configmap.yaml
 kubectl apply -f 02-frontend-deployment.yaml
 kubectl apply -f 03-frontend-service.yaml
 kubectl apply -f 04-frontend-ingress.yaml
+
+
+kubectl get nodes
+kubectl get pods -n three-tier-app
 ```
 
-### Step 15: Test the App
+### Step 15: Test the App 
 
 ```
-
+ab -n 10000 -c 500 URL
 ```
 
 
