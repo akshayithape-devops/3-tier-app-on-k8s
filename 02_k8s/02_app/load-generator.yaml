@@ -1,14 +1,22 @@
-apiVersion: v1
-kind: Pod
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: ab-test
+  name: webapp-load-generator
 spec:
-  containers:
-    - name: ab
-      image: httpd:2.4
-      command: ["/bin/sh"]
-      args:
-        - -c
-        - |
-          ab -n 1000000 -c 2000 http://karpenter-demo/
-  restartPolicy: Never
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ab
+          image: httpd:2.4
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              echo "Waiting for the webapp service to become reachable..."
+              until ab -n 1 -c 1 http://karpenter-demo/ >/dev/null 2>&1; do
+                sleep 2
+              done
+              echo "Starting traffic to trigger HPA scale-out..."
+              ab -k -n 1000000 -c 250 http://karpenter-demo/

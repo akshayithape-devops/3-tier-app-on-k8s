@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: three-tier-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      # Force pods to on-demand nodes
+      nodeSelector:
+        karpenter.sh/capacity-type: on-demand
+      containers:
+      - name: frontend
+        image: 970453994651.dkr.ecr.ap-south-1.amazonaws.com/3-tier-app-demo/frontend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "30m"
+            memory: "100Mi"
+          limits:
+            cpu: "60m"
+            memory: "200Mi"
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/share/nginx/html/env.js
+          subPath: env.js
+
+      volumes:
+      - name: config-volume
+        configMap:
+          name: frontend-config

@@ -1,0 +1,76 @@
+apiVersion: psmdb.percona.com/v1
+kind: PerconaServerMongoDB
+metadata:
+  name: mongo-cluster
+  namespace: three-tier-app
+
+spec:
+  crVersion: 1.16.0
+  image: percona/percona-server-mongodb:6.0
+
+  allowUnsafeConfigurations: false
+  updateStrategy: SmartUpdate
+
+  secrets:
+    users: mongo-users
+
+  # ✅ MUST KEEP IMAGE (even if disabled)
+  pmm:
+    enabled: false
+    image: percona/pmm-client:2.41.0
+
+  backup:
+    enabled: false
+    image: percona/percona-backup-mongodb:2.4.0
+
+  replsets:
+    - name: rs0
+      size: 3
+
+      affinity:
+        antiAffinityTopologyKey: kubernetes.io/hostname
+
+      resources:
+        requests:
+          cpu: "300m"
+          memory: "512Mi"
+        limits:
+          cpu: "1"
+          memory: "1Gi"
+
+      volumeSpec:
+        persistentVolumeClaim:
+          storageClassName: gp2
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+      podDisruptionBudget:
+        maxUnavailable: 1
+
+      configuration: |
+        security:
+          authorization: enabled
+
+  users:
+    - name: appuser
+      db: admin
+      passwordSecretRef:
+        name: mongo-users
+        key: MONGODB_USER_PASSWORD
+      roles:
+        - name: readWrite
+          db: appdb
+
+    - name: admin
+      db: admin
+      passwordSecretRef:
+        name: mongo-users
+        key: MONGODB_CLUSTER_ADMIN_PASSWORD
+      roles:
+        - name: root
+          db: admin
+
+  sharding:
+    enabled: false

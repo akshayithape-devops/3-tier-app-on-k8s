@@ -85,13 +85,14 @@ Karpenter is an open-source, flexible, high-performance Kubernetes cluster autos
 │   │   ├── 02_nodepool_ondemand.yaml
 │   │   └── 03_nodepool_spot.yaml
 │   └── 02_app
+│       ├── inflate-ondemand.yaml
 │       ├── load-generator.yaml
 │       ├── webapp-hpa.yaml
 │       ├── webapp-svc.yaml
 │       └── webapp.yaml
 └── README.md
 
-11 directories, 62 files
+11 directories, 63 files
 ```
 
 ## Prerequisites
@@ -107,7 +108,7 @@ Karpenter is an open-source, flexible, high-performance Kubernetes cluster autos
 ### Step 1: Deploy VPC
 
 ```
-cd terraform/vpc
+cd 01_terraform/01_vpc
 terraform init
 terraform apply -auto-approve
 ```
@@ -115,14 +116,14 @@ terraform apply -auto-approve
 ### Step 2: Deploy EKS Cluster + Add-ons
 
 ```
-cd terraform/eks
+cd 01_terraform/02_eks
 terraform init
 terraform apply -auto-approve
 ```
 ### Step 3: Deploy Karpenter 
 
 ```
-cd terraform/karpenter
+cd 01_terraform/03_karpenter
 terraform init
 terraform apply -auto-approve
 ```
@@ -142,7 +143,7 @@ kubectl get pods -n kube-system -l app.kubernetes.io/name=karpenter
 ### Step 6: Apply Karpenter Configuration
 
 ```
-cd k8s/karpenter
+cd 02_k8s/01_karpenter
 kubectl apply -f 01_ec2nodeclass.yaml
 kubectl apply -f 02_nodepool_ondemand.yaml
 kubectl apply -f 03_nodepool_spot.yaml
@@ -151,7 +152,7 @@ kubectl apply -f 03_nodepool_spot.yaml
 ### Step 7: Verify NodePools and EC2Nodeclass
 
 ```
-ectl get nodepools
+kubectl get nodepools
 kubectl get ec2nodeclass
 ```
 
@@ -165,11 +166,10 @@ kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter -f
 ### Step 9: Deploy the application
 
 ```
-cd k8s/app
+cd 02_k8s/02_app
 kubectl apply -f webapp.yaml
 kubectl apply -f webapp-svc.yaml
 kubectl apply -f webapp-hpa.yaml
-kubectl apply -f load-generator.yaml
 
 ```
 
@@ -178,6 +178,63 @@ kubectl apply -f load-generator.yaml
 ```
 kubectl get pods
 kubectl get nodes
+```
+
+### Step 11: Generate traffic and watch auto scaling
+
+The `webapp` uses an HPA based on CPU utilization. In practice, traffic
+increases CPU usage on the nginx pods, and that is what triggers scale-out.
+
+```
+kubectl get hpa karpenter-demo-hpa -w
+kubectl apply -f 02_k8s/02_app/load-generator.yaml
+kubectl get deploy karpenter-demo -w
+```
+
+### Step 12: Re-run the traffic test
+
+Because the load generator is a `Job`, delete it before starting another run:
+
+```
+kubectl delete job webapp-load-generator --ignore-not-found
+kubectl apply -f 02_k8s/02_app/load-generator.yaml
+```
+
+## Simple Karpenter Test Example
+
+If you want a deterministic way to test Karpenter before using the HPA demo,
+deploy the `inflate-ondemand` workload. It starts with `0` replicas, so you
+can scale it up and down on demand.
+
+### Why this example is useful
+
+- Targets `karpenter.sh/capacity-type=on-demand`, so the pods land on the
+  Karpenter on-demand NodePool
+- Uses resource requests large enough to create pending pods and trigger node
+  provisioning
+- Scales back down cleanly so you can observe consolidation afterward
+
+### Apply the example
+
+```
+kubectl apply -f 02_k8s/02_app/inflate-ondemand.yaml
+kubectl scale deployment inflate-ondemand --replicas 6
+```
+
+### Watch Karpenter react
+
+```
+kubectl get pods -w
+kubectl get nodeclaims
+kubectl get nodes -L karpenter.sh/capacity-type
+kubectl logs -n kube-system -l app.kubernetes.io/name=karpenter -f
+```
+
+### Scale back down and observe consolidation
+
+```
+kubectl scale deployment inflate-ondemand --replicas 0
+kubectl get nodes -w
 ```
 
 ## Thanks

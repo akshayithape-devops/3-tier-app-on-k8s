@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: three-tier-app
+data:
+  env.js: |
+    window._env_ = {
+      API_URL: "http://k8s-threetie-backendi-78b2f8ae4e-1756464394.ap-south-1.elb.amazonaws.com"
+    }

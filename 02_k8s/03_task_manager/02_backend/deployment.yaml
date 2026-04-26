@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: three-tier-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      nodeSelector:
+        karpenter.sh/capacity-type: on-demand
+
+      containers:
+      - name: backend
+        image: 970453994651.dkr.ecr.ap-south-1.amazonaws.com/3-tier-app-demo/backend:latest
+        ports:
+        - containerPort: 3000
+
+        env:
+        - name: MONGO_URI
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: MONGO_URI
+
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: PORT
+
+        resources:
+          requests:
+            cpu: "30m"
+            memory: "100Mi"
+          limits:
+            cpu: "60m"
+            memory: "200Mi"
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
