@@ -315,7 +315,14 @@ docker tag 3-tier-app-demo/frontend:latest 970453994651.dkr.ecr.ap-south-1.amazo
 docker push 970453994651.dkr.ecr.ap-south-1.amazonaws.com/3-tier-app-demo/backend:latest
 ```
 
-### Step 11: Deploy DB - Single Server  
+### Step 11: Deploy Namespace  
+
+```
+cd 02_k8s/03_task_manager/
+kubectl apply -f app-namespace.yaml
+```
+
+### Step 12: Deploy DB - Single Server  
 
 ```
 cd 02_k8s/03_task_manager/01_database/ 
@@ -324,7 +331,7 @@ kubectl apply -f 02-db-mongo-cluster.yaml
 kubectl apply -f 03-db-service.yaml
 ```
 
-### Step 12: Deploy DB - Backend Server 
+### Step 13: Deploy DB - Backend Server 
 
 ```
 cd 02_k8s/03_task_manager/02_backend/ 
@@ -334,7 +341,7 @@ kubectl apply -f 03-backend-service.yaml
 kubectl apply -f 04-backend-ingress.yaml
 ```
 
-### Step 13: Deploy DB - Frontend Server 
+### Step 14: Deploy DB - Frontend Server 
 
 ```
 cd 02_k8s/03_task_manager/03_frontend/ 
@@ -344,7 +351,7 @@ kubectl apply -f 03-frontend-service.yaml
 kubectl apply -f 04-frontend-ingress.yaml
 ```
 
-### Step 14: Test the App
+### Step 15: Test the App
 
 ```
 
