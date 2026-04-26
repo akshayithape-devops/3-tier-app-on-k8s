@@ -429,20 +429,30 @@ kubectl get pods -n three-tier-app
 
 ```
 # GET Call
-for i in {1..1000}; do
-  curl -s -o /dev/null -w "%{http_code}\n" \
-  http://k8s-threetie-frontend-a5ba41a647-1397024141.ap-south-1.elb.amazonaws.com/ &
-done
-wait
+seq 1 1000 | xargs -n 1 -P 50 curl -s -X GET \
+http://k8s-threetie-backendi-78b2f8ae4e-1891884487.ap-south-1.elb.amazonaws.com/tasks
 
 # POST Call
-for i in {1..1000}; do
-  curl -s -X POST "http://k8s-threetie-frontend-a5ba41a647-2059190062.ap-south-1.elb.amazonaws.com/tasks" \
-    -H "Content-Type: application/json" \
-    -d "{\"title\":\"task-$i\"}" &
-done
+# Single Request 
+curl -v -X POST "http://k8s-threetie-backendi-78b2f8ae4e-1891884487.ap-south-1.elb.amazonaws.com/tasks" \                                                            ─╯
+  -H "Content-Type: application/json" \
+  -d '{"title":"test-task"}'
 
-wait
+# Multiple Reeusts
+seq 1 1000 | xargs -n 1 -P 50 -I {} curl -s -X POST \
+"http://k8s-threetie-backendi-78b2f8ae4e-1891884487.ap-south-1.elb.amazonaws.com/tasks" \
+-H "Content-Type: application/json" \
+-d "{\"title\":\"task-{}\"}"
+
+# DELETE Call
+curl -v -X DELETE "http://k8s-threetie-backendi-78b2f8ae4e-1891884487.ap-south-1.elb.amazonaws.com/tasks/69ed829dd4b4036f318bf27e"
+
+curl -s http://k8s-threetie-backendi-78b2f8ae4e-1891884487.ap-south-1.elb.amazonaws.com/tasks \
+| jq -r '.[].id' \
+| while read id; do
+    echo "Deleting $id"
+    curl -s -X DELETE "http://k8s-threetie-backendi-78b2f8ae4e-1891884487.ap-south-1.elb.amazonaws.com/tasks/$id"
+  done
 ```
 
 ## Thanks
